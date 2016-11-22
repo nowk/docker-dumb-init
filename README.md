@@ -6,23 +6,16 @@ Fixing `PID 1` signals with [dumb-init](https://github.com/Yelp/dumb-init) via `
 ## Install
 
     make
-    make dumb-init-shared-volume
+    make dumb-init-volume
 
 
 ## Usage
 
-This uses [nowk/docker.sh](https://github.com/nowk/docker.sh) to build a gulp wrapper that executes gulp via Docker.
+Usage uses `gulp` which generally has a PID issue and does not get exit signals properly.
 
-    # get the PATH and preppend our dumb-init
-    path=$(echo "$(node -- --rm --entrypoint env | grep ^PATH=)" | sed "s#PATH=##")
-    path="/opt/dumb-init/bin:$path"
-
-    args=(./node_modules/.bin/gulp "$@" -- \
-      --rm -t -i \
-      --volumes-from=dumb-initv1.2.0 \
-      -e="PATH=$path" \
-      -u $(id -u $(whoami)) --entrypoint dumb-init)
-
-    # the path here is an assumed submodule path to docker-nodejs
-    $(dirname $0)/../.lib/docker-nodejs/bin/node ${args[@]}
+    docker run --rm -it \
+      -v=volume/bin/dumb-init:/usr/local/bin/dumb-init \
+      --entrypoint=dumb-init \
+      -u=$(id -u $(whoami)) \
+      node:7.1.0 ./node_modules/.bin/gulp "%@"
 
