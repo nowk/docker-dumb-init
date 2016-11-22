@@ -8,20 +8,17 @@ build:
 	docker build --rm -t ${NAME}:${VERSION} .
 
 
-.PHONY: dumm-init-shared-volume
+.PHONY: dumm-init-volume
 
-# Because we cannot plainly overlay the FS the volume, we need to add the
-# shared-volume to PATH
+
+# dumb-init-volume
+# creates a data volume that can be mounted via file,
 #
-#	# get the full PATH env from the docker in question, this uses a docker.sh'd
-#	# node, can be other, eg. ruby, go, etc...
-#	path=$(echo "$(node -- --entrypoint env | grep ^PATH=)" | sed "s#PATH=##")
-#	path="/opt/dumb-init/bin:$path"
+#     -v volume/bin/dumb-init:/usr/local/bin/dumb-init
 #
-#   Then set the path via `-e`
-#
-#	-e="PATH=${path}"
-#
-dumb-init-shared-volume:
-	docker run -v /opt/dumb-init --entrypoint /bin/bash --name ${NAME}v${VERSION} ${NAME}:${VERSION} -c "echo"
+dumb-init-volume:
+	docker create -v /usr/local/bin --name ${NAME}v${VERSION} ${NAME}:${VERSION}
+	mkdir -p volume
+	docker cp ${NAME}v${VERSION}:/usr/local/bin volume
+	docker rm -v ${NAME}v${VERSION}
 
